@@ -1,11 +1,11 @@
 <?php
   /**
-   * reading-heatmap-cal
-   * https://github.com/sorakakeru/reading-heatmap-cal
+   * emoji-message-form
+   * https://github.com/sorakakeru/emoji-message-form
    * 
    * Copyright (c) 2026 Yamatsu
    * Released under the MIT license
-   * https://github.com/sorakakeru/reading-heatmap-cal/blob/main/LICENSE
+   * https://github.com/sorakakeru/emoji-message-form/blob/main/LICENSE
    * 
    * This script uses the PHP dotenv library and the Twig template engine (both under the BSD-3-Clause License).
    * For details about Twig's license, please refer to Twig web site.

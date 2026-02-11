@@ -1,11 +1,11 @@
 <?php
   /**
-   * reading-heatmap-cal
-   * https://github.com/sorakakeru/reading-heatmap-cal
+   * emoji-message-form
+   * https://github.com/sorakakeru/emoji-message-form
    * 
    * Copyright (c) 2026 Yamatsu
    * Released under the MIT license
-   * https://github.com/sorakakeru/reading-heatmap-cal/blob/main/LICENSE
+   * https://github.com/sorakakeru/emoji-message-form/blob/main/LICENSE
    * 
    * This script uses the PHP dotenv library and the Twig template engine (both under the BSD-3-Clause License).
    * For details about Twig's license, please refer to Twig web site.
@@ -39,63 +39,6 @@
   function validateToken($token, $sessionKey = 'token') {
     //送信されてきた$tokenが生成したハッシュと一致するか
     return isset($_SESSION[$sessionKey]) && hash_equals($_SESSION[$sessionKey], $token);
-  }
-
-  //ページ数バリデーション
-  function validatePageNumber($number) {
-    $errors = [];
-    if (empty($number)) {
-      $errors[] = '入力必須項目です';
-    }
-    if (!is_numeric($number)) {
-      $errors[] = '整数値を入力してください';
-    }
-    return $errors;
-  }
-
-  //データ追加処理
-  function addPageCount($data, $date, $count) {
-    //日付の空きを埋める処理
-    if (!empty($data)) {
-      //最後のログの日付
-      $lastDate = $data[count($data) - 1]['date'];
-      $lastDateObj = new DateTime($lastDate);
-      $currentDateObj = new DateTime($date);
-
-      //日付差分
-      $diff = $lastDateObj->diff($currentDateObj)->days;
-
-      //1日以上空いていたら
-      if ($diff > 1) {
-        for ($i = 1; $i < $diff; $i++) {
-          $gapDate = $lastDateObj->modify('+1 day')->format('Y-m-d');
-          $data[] = [
-            'date' => $gapDate,
-            'count' => 0
-          ];
-        }
-      }
-    }
-
-    //データの存在チェック＆加算処理
-    $found = false;
-    foreach ($data as &$item) {
-      if ($item['date'] === $date) {
-        $item['count'] += $count;
-        $found = true;
-        break;
-      }
-    }
-    unset($item);
-
-    //同じ日付がなければ新規追加
-    if (!$found) {
-      $data[] = [
-        'date' => $date,
-        'count' => $count
-      ];
-    }
-    return $data;
   }
 
   //XSS対策

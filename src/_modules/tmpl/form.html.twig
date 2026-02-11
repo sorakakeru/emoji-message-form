@@ -1,0 +1,19 @@
+<form action="" method="post" id="msgForm">
+  <input type="hidden" name="token" value="{{ token }}">
+  <ul class="emoji_list">
+    {% for value in emojiList %}
+      <li><label><input type="radio" name="emoji" value="emoji{{ key }}">{{ item }}</label></li>
+    {% endfor %}
+  </ul>
+  <dl>
+    <dt>メッセージ</dt>
+    <dd>
+      <textarea name="enqtext{{ key }}"></textarea>
+      {% if value.maxCount %}<p class="count">（あと<span data-maxcount="{{ value.maxCount }}">{{ value.maxCount }}</span>文字入力できます）</p>{% endif %}
+      {% if value.supplement %}<p class="supplement">{{ value.supplement }}</p>{% endif %}
+    </dd>
+  </dl>
+  <div class="btn_area">
+    <button type="submit" name="send">送信</button>
+  </div>
+</form>

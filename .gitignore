@@ -1,6 +1,8 @@
 .DS_Store
 
 _TnSkLxW9
+src/.env
+src/.htaccess
 src/_assets/
 src/log.json
 src/_modules/vendor

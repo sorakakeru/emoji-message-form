@@ -1,76 +1,31 @@
-<!DOCTYPE html>
+{% extends 'base.html.twig' %}
 
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="format-detection" content="telephone=no">
-<meta name="robots" content="noindex,nofollow,noarchive">
-<title>{{ title }}</title>
-<link rel="stylesheet" href="./css/style.css">
-<link rel="stylesheet" href="https://unpkg.com/cal-heatmap/dist/cal-heatmap.css">
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://unpkg.com/cal-heatmap/dist/cal-heatmap.min.js"></script>
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/cal-heatmap/dist/plugins/Tooltip.min.js"></script>
+{% block main %}
 
-<script src="./js/script.js" defer></script>
-</head>
-<body>
-
-<div class="wrapper">
-
-	<h1>{{ title }}</h1>
-
-  <div class="scroll_area">
-    <div id="cal-heatmap"></div>
-  </div>
+  {% if not logFileExists %}
+    <p class="msg error">データ保存用jsonファイルがありません</p>
+  {% else %}
 
     <div class="form_area">
 
-      {% if error %}
+      {% if sendSuccess %}
+        <p class="msg success">{{ thanxMsg }}</p>
+      {% endif %}
+
+      {% if not emoji %}
+        <p class="msg error">絵文字が設定されていません</p>
+      {% else %}
+
         {% for msg in error %}
           <p class="msg error">{{ msg }}</p>
         {% endfor %}
-      {% endif %}
 
-      {% if isAdmin %}
+        {{ include('form.html.twig') }}
 
-        {% if sendSuccess %}
-          <p class="msg success">入力完了！</p>
-        {% endif %}
-
-        <form action="" method="post" id="dataForm">
-          <input type="hidden" name="token" value="{{ token }}">
-          <dl>
-            <dt>reading total number of pages...</dt>
-            <dd><input type="text" name="number"></dd>
-          </dl>
-
-          <div class="btn_area">
-            <button type="submit" name="send_num">送信</button>
-          </div>
-        </form>
-
-      {% else %}
-
-        <form action="" method="post" id="lginForm">
-          <input type="hidden" name="token" value="{{ token }}">
-          <dl>
-            <dt>login password...</dt>
-            <dd><input type="password" name="password"></dd>
-          </dl>
-
-          <div class="btn_area">
-            <button type="submit" name="send_login">送信</button>
-          </div>
-        </form>
-      
       {% endif %}
 
     </div>
 
-</div>
+  {% endif %}
 
-</body>
-</html>
+{% endblock %}

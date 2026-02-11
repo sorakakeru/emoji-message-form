@@ -1,0 +1,95 @@
+{% extends 'base.html.twig' %}
+
+{% block css %}<link rel="stylesheet" href="../css/style.css">{% endblock %}
+
+{% block backlink %}
+  <div class="back"><a href="../">アンケートに戻る</a></div>
+{% endblock %}
+
+{% block main %}
+
+  {# logFileExistsチェック #}
+  {% if not logFileExists %}
+    <p class="error">データ保存用jsonファイルがありません</p>
+  {% else %}
+
+    {{ include('error.html.twig') }}
+
+    {% if isAdmin %}
+
+      {% if not results %}
+        <p class="results">まだデータはありません</p>
+      {% else %}
+
+        <p class="results">データ：全{{ total }}件</p>
+
+        <ul class="result_data">
+          {% for item in results %}
+            <li>
+              <div class="date"><time datetime="{{ item.date }}">{{ item.date }}</time></div>
+              <dl>
+                {% for key, value in item.enqdata %}
+                  {% if value %}
+                    <dt>{{ label[key] is defined ? label[key] : key }}</dt>
+                    <dd>{{ value|nl2br }}</dd>
+                  {% endif %}
+                {% endfor %}
+              </dl>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <nav class="navigation">
+          {% if pager > 1 %}
+            <div class="nav prev"><a href="./index.php?page={{ pager - 1 }}">←</a></div>
+          {% endif %}
+          <ol>
+            {% if pager > 3 %}
+              <li><a href="./index.php?page=1">1</a></li>
+              <li>...</li>
+            {% endif %}
+
+            {% for p in (pager - 2)..(pager + 2) %}
+              {% if p > 0 and p <= totalPages %}
+                <li>
+                  {% if p == pager %}
+                    <span class="current">{{ p }}</span>
+                  {% else %}
+                    <a href="./index.php?page={{ p }}">{{ p }}</a>
+                  {% endif %}
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if pager < totalPages - 2 %}
+              <li>...</li>
+              <li><a href="./index.php?page={{ totalPages }}">{{ totalPages }}</a></li>
+            {% endif %}
+
+          </ol>
+          {% if pager < totalPages %}
+            <div class="nav next"><a href="./index.php?page={{ pager + 1 }}">→</a></div>
+          {% endif %}
+        </nav>
+
+      {% endif %}
+
+    {% else %}
+      <div class="form_area">
+        <form action="" method="post" id="lginForm">
+          <input type="hidden" name="token" value="{{ token }}">
+          <dl>
+            <dt>login password...</dt>
+            <dd><input type="password" name="password"></dd>
+          </dl>
+
+          <div class="btn_area">
+            <button type="submit" name="send">送信</button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+{% endblock %}
