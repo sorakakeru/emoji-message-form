@@ -35,84 +35,82 @@
 
   //default
   $token = '';
-  $isAdmin = !empty($_SESSION['isAdmin']);
   $sendSuccess = false;
   $error = [];
 
-  //token生成
-  if (empty($_SESSION['token'])) {
-    $_SESSION['token'] = generateToken();
-  }
-  $token = $_SESSION['token'];
+  //ファイルの存在チェック
+  $logFileExists = file_exists($log_file);
 
-
-  //フォーム送信処理（ログイン）
-  if (isset($_POST['send_login'])) {
-
-    //token確認
-    $token = isset($_POST['token']) ? $_POST['token'] : '';
-    $validateToken = validateToken($token);
-
-    //tokenチェック
-    if (!$validateToken) {
-      $error[] = '不正な操作を検出したためログインできませんでした';
-    } else {
-
-      //パスワードの整合性チェック（PWはハッシュ化されている必要がある）
-      $pw = $_POST['password'] ?? '';
-      if (!password_verify($pw, $_ENV['ADMIN_PW'])) {
-        $error[] = 'ログインパスワードが一致しませんでした';
-      } else {
-        session_regenerate_id(true);
-        $isAdmin = true;
-        $_SESSION['isAdmin'] = true;
-      }
-
+  if ($logFileExists) {
+    //token生成
+    if (empty($_SESSION['token'])) {
+      $_SESSION['token'] = generateToken();
     }
+    $token = $_SESSION['token'];
 
+    //アンケート項目が空欄でなければデータを格納
+    $enq_conte = (!empty($enq_conte)) ? $enq_conte : [];
   }
 
-  //フォーム送信処理（ページ数）
-  if (isset($_POST['send_num'])) {
+
+  //フォーム送信処理
+  if (isset($_POST['send'])) {
 
     //token確認
     $token = isset($_POST['token']) ? $_POST['token'] : '';
     $validateToken = validateToken($token);
 
-    //tokenチェック
     if (!$validateToken) {
-      $error[] = '不正な操作を検出したためログインできませんでした';
+      $error[] = '不正な操作を検出したため送信できませんでした';
     } else {
 
-      //ファイルの存在チェック
-      $logFileExists = file_exists($log_file);
-
-      if (!$logFileExists) {
-        $error[] = 'ログファイルが存在しません';
+      //データ取得
+      $postData = $_POST;
+      unset($postData['token'], $postData['send']);
+      $data = [];
+      foreach ($postData as $value) {
+        if (is_array($value)) $value = implode(',', $value);
+        $send_data[] = h($value);
+      }
+      
+      if (count($enq_conte) !== count($send_data)) {
+        $error[] = '設問の数と一致しません（管理者にお問い合わせください）';
       } else {
+        //整合性とバリデーションチェック
+        for ($i=0; $i<count($enq_conte); $i++) {
+          if ($enq_conte[$i]['required'] === true && empty($send_data[$i])) {
+            if ($enq_conte[$i]['type'] === 'text' || $enq_conte[$i]['type'] === 'textarea') {
+              $error[] = "{$enq_conte[$i]['name']}は入力必須項目です";
+            } elseif ($enq_conte[$i]['type'] === 'radio') {
+              $error[] = "{$enq_conte[$i]['name']}の項目は1つ選択してください";
+            } elseif ($enq_conte[$i]['type'] === 'checkbox') {
+              $error[] = "{$enq_conte[$i]['name']}の項目は1つ以上選択してください";
+            }
+          }
+          
+          if (isset($enq_conte[$i]['maxStr'])) {
+            if (mb_strlen($send_data[$i], 'UTF-8') > $enq_conte[$i]['maxStr']) $error[] = "{$enq_conte[$i]['name']}の文字数が{$enq_conte[$i]['maxStr']}文字を超えています";
+          }
 
-        //バリデーションチェック
-        $error = array_merge($error, validatePageNumber($_POST['number'] ?? ''));
+        }
 
+        //エラーがなければ保存処理
         if (empty($error)) {
-          //jsonファイル読み込み
-          $data = loadDatas($log_file);
+          $w_data = [];
+          if ($logFileExists) $w_data = loadLogs($log_file);
 
-          //日付
-          date_default_timezone_set('Asia/Tokyo');
-          $date = date('Y-m-d');
-
-          //カウント
-          $count = isset($_POST['number']) && is_numeric($_POST['number']) ? (int)$_POST['number'] : 0;
-
-          //データ追加処理
-          $data = addPageCount($data, $date, $count);
+          $w_data[] = [
+            'date' => date('Y-m-d H:i:s'),
+            'enqdata' => $send_data
+          ];
 
           //ファイル書き込み
-          $sendSuccess = file_put_contents($log_file, json_encode($data, JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
-          if ($sendSuccess) {
-            session_regenerate_id(true);
-          }
+          $sendSuccess = file_put_contents($log_file, json_encode($w_data, JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+
+          //token再生成（削除の代わり）
+          $_SESSION['token'] = generateToken();
+          $token = $_SESSION['token'];
+
         }
 
       }
@@ -121,11 +119,16 @@
 
   }
 
-  //Twigに渡してレンダリング
+  // Twigに渡してレンダリング
   echo $template->render([
+    'bodyClass' => 'home',
     'title' => $title,
+    'description' => $description,
+    'siteName' => $siteName,
+    'siteURL' => $siteURL,
     'token' => $token,
-    'isAdmin' => $isAdmin,
+    'logFileExists' => $logFileExists,
+    'enqConte' => $enq_conte,
     'sendSuccess' => $sendSuccess,
     'error' => $error
   ]);
