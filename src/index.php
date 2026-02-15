@@ -21,11 +21,6 @@
   $twig = new \Twig\Environment($loader, []);
   $template = $twig->load('index.html.twig');
 
-  //phpdotenv
-  use Dotenv\Dotenv;
-  $dotenv = Dotenv::createImmutable(__DIR__);
-  $dotenv->load();
-
   //include
   require_once __DIR__. '/_modules/fnc_inc/config.php';
   require_once __DIR__. '/_modules/fnc_inc/functions.php';

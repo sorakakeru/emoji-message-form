@@ -1,21 +1,30 @@
 <?php
   /**
-   * simple-enquete
-   * https://github.com/sorakakeru/simple-enquete
+   * emoji-message-form
+   * https://github.com/sorakakeru/emoji-message-form
    * 
-   * Copyright (c) 2025 Yamatsu
+   * Copyright (c) 2026 Yamatsu
    * Released under the MIT license
-   * https://github.com/sorakakeru/simple-enquete/blob/main/LICENSE
+   * https://github.com/sorakakeru/emoji-message-form/blob/main/LICENSE
    * 
-   * This script uses the Twig template engine (BSD-3-Clause License).
-   * For details about Twig's license, please refer to LICENSE_TWIG.
+   * This script uses the PHP dotenv library and the Twig template engine (both under the BSD-3-Clause License).
+   * For details about Twig's license, please refer to Twig web site.
+   * https://twig.symfony.com/license
+   * For details about PHP dotenv's license, please refer to PHP dotenv GitHub repository.
+   * https://github.com/vlucas/phpdotenv/blob/master/LICENSE
    */
 
-  //Twig
   require_once __DIR__. '/../_modules/vendor/autoload.php';
+
+  //Twig
   $loader = new \Twig\Loader\FilesystemLoader(__DIR__. '/../_modules/tmpl');
   $twig = new \Twig\Environment($loader, []);
   $template = $twig->load('admin/index.html.twig');
+
+  //phpdotenv
+  use Dotenv\Dotenv;
+  $dotenv = Dotenv::createImmutable(__DIR__);
+  $dotenv->load();
 
   //include
   require_once __DIR__. '/../_modules/fnc_inc/config.php';
@@ -27,7 +36,6 @@
   //default
   $token = '';
   $isAdmin = !empty($_SESSION['isAdmin']);
-  $label = [];
   $results = [];
   $total = 0;
   $pager = 1;
@@ -72,11 +80,6 @@
         if (!empty($data)) {
           $data = array_reverse($data);
 
-          //アンケートのラベル格納
-          foreach ($enq_conte as $value) {
-            $label[] = $value['name'];
-          }
-
           //ページャー設定
           $total = count($data);
           $totalPages = (int)ceil($total / $page);
@@ -98,11 +101,6 @@
     if (!empty($data)) {
       $data = array_reverse($data);
 
-      //アンケートのラベル格納
-      foreach ($enq_conte as $value) {
-        $label[] = $value['name'];
-      }
-
       //ページャー設定
       $total = count($data);
       $totalPages = (int)ceil($total / $page);
@@ -119,7 +117,6 @@
     'token' => $token,
     'logFileExists' => $logFileExists,
     'isAdmin' => $isAdmin,
-    'label' => $label,
     'results' => $results,
     'total' => $total,
     'pager' => $pager,
