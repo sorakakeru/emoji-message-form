@@ -48,8 +48,8 @@
     }
     $token = $_SESSION['token'];
 
-    //アンケート項目が空欄でなければデータを格納
-    $enq_conte = (!empty($enq_conte)) ? $enq_conte : [];
+    //絵文字リストが空欄でなければデータを格納
+    $emoji_list = (!empty($emoji_list)) ? $emoji_list : [];
   }
 
 
@@ -64,44 +64,27 @@
       $error[] = '不正な操作を検出したため送信できませんでした';
     } else {
 
-      //データ取得
-      $postData = $_POST;
-      unset($postData['token'], $postData['send']);
-      $data = [];
-      foreach ($postData as $value) {
-        if (is_array($value)) $value = implode(',', $value);
-        $send_data[] = h($value);
-      }
-      
-      if (count($enq_conte) !== count($send_data)) {
-        $error[] = '設問の数と一致しません（管理者にお問い合わせください）';
+      if (!$logFileExists) {
+        $error[] = 'データ保存用jsonファイルがありません';
       } else {
-        //整合性とバリデーションチェック
-        for ($i=0; $i<count($enq_conte); $i++) {
-          if ($enq_conte[$i]['required'] === true && empty($send_data[$i])) {
-            if ($enq_conte[$i]['type'] === 'text' || $enq_conte[$i]['type'] === 'textarea') {
-              $error[] = "{$enq_conte[$i]['name']}は入力必須項目です";
-            } elseif ($enq_conte[$i]['type'] === 'radio') {
-              $error[] = "{$enq_conte[$i]['name']}の項目は1つ選択してください";
-            } elseif ($enq_conte[$i]['type'] === 'checkbox') {
-              $error[] = "{$enq_conte[$i]['name']}の項目は1つ以上選択してください";
-            }
-          }
-          
-          if (isset($enq_conte[$i]['maxStr'])) {
-            if (mb_strlen($send_data[$i], 'UTF-8') > $enq_conte[$i]['maxStr']) $error[] = "{$enq_conte[$i]['name']}の文字数が{$enq_conte[$i]['maxStr']}文字を超えています";
-          }
 
-        }
+        //データ取得
+        $post_emoji = $_POST['emoji'] ?? '';
+        $post_message = $_POST['message'] ?? '';
+
+        //バリデーションチェック
+        if (empty($post_emoji)) $error[] = '絵文字は1つ選択してください';
+        if (!is_string($post_emoji)) $error[] = '不正な絵文字を検出したため送信できませんでした';
 
         //エラーがなければ保存処理
         if (empty($error)) {
           $w_data = [];
-          if ($logFileExists) $w_data = loadLogs($log_file);
+          $w_data = loadDatas($log_file);
 
           $w_data[] = [
             'date' => date('Y-m-d H:i:s'),
-            'enqdata' => $send_data
+            'emoji' => $emoji_list[str_replace('emoji', '', $post_emoji)],
+            'message' => $post_message
           ];
 
           //ファイル書き込み
@@ -121,14 +104,16 @@
 
   // Twigに渡してレンダリング
   echo $template->render([
-    'bodyClass' => 'home',
+    'bodyClass' => 'form_page',
     'title' => $title,
     'description' => $description,
     'siteName' => $siteName,
     'siteURL' => $siteURL,
     'token' => $token,
     'logFileExists' => $logFileExists,
-    'enqConte' => $enq_conte,
+    'emojiList' => $emoji_list,
+    'maxCount' => $maxCount,
+    'thanxMsg' => $thanxMsg,
     'sendSuccess' => $sendSuccess,
     'error' => $error
   ]);

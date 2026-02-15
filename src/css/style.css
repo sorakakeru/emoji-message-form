@@ -4,9 +4,9 @@
   * reset
   */
 
-body, p, dl, dt, dd, h1, ol, li {
-  margin: 0;
-  padding: 0;
+body, p, dl, dt, dd, h1, ul, ol, li, form, input, textarea, button {
+  margin: unset;
+  padding: unset;
 }
 
 *,
@@ -82,7 +82,7 @@ a:active {
 
 .wrapper {
   margin: 3em auto;
-  width: min(90%, 800px);
+  width: min(90%, 600px);
 }
 
 .header {
@@ -106,7 +106,7 @@ h1 {
 }
 
 .main {
-  margin-bottom: 3em;
+  margin-bottom: 3.5em;
 }
 
 .gallery_area {
@@ -209,7 +209,7 @@ h1 {
   text-align: center;
 }
 
-.footer small {
+.footer p {
   font-size: 0.85em;
 }
 
@@ -217,8 +217,25 @@ h1 {
   color: var(--attentionColor);
   font-weight: 700;
 }
-ul.error {
-  margin: 0 0 1.5em 1.5em;
+
+.success {
+  padding: 1em 0.5em;
+  color: var(--whiteColor);
+  font-weight: 700;
+  text-align: center;
+  background-color: var(--primaryColor);
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  animation: 3s fadeOut;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 
@@ -242,7 +259,7 @@ textarea:focus {
   outline: 4px solid var(--primaryColor);
 }
 
-input:not(:where([type="checkbox"], [type="radio"])),
+input:not([type="radio"]),
 textarea {
   padding: 0.25em;
   border: 1px solid var(--baseColor);
@@ -255,23 +272,9 @@ textarea {
   display: block;
 }
 
-input[type="checkbox"],
 input[type="radio"] {
-  margin-right: 0.25em;
-  border: 1px solid var(--baseColor);
-  width: 1em;
-  height: 1em;
-}
-input[type="checkbox"] {
-  border-radius: 2.5px;
-}
-input[type="radio"] {
-  border-radius: 50%;
-}
-input[type="checkbox"]:checked,
-input[type="radio"]:checked {
-  border: 1px solid var(--primaryColor);
-  background-color: var(--primaryColor);
+  width: 1px;
+  height: 1px;
 }
 
 button {
@@ -290,19 +293,50 @@ button:hover {
 
 .form_area {
   margin-top: 2em;
-  padding-top: 2em;
+  padding-top: 2.5em;
   border-top: 1px solid var(--grayColor);
 }
 
-dt {
-  margin-bottom: 0.25em;
-  font-weight: 700;
+.emoji_list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
-dd + dt {
+
+.emoji_list li {
+  margin: 0 0.5em 0.25em;
+  font-size: 1.25em;
+  list-style: none;
+}
+
+.emoji_list label {
+  padding: 0.25em 0.5em;
+  border: 1px solid var(--grayColor);
+  border-radius: 100vmax;
+  transition: all 0.3s;
+  display: block;
+  cursor: pointer;
+}
+.emoji_list label:hover,
+.emoji_list label:has(input[type="radio"]:checked) {
+  background-color: var(--primaryColor);
+  border-color: var(--primaryColor);
+}
+
+.form_area dl {
   margin-top: 1.5em;
 }
 
-.btn_area {
+.form_area dt {
+  margin-bottom: 0.25em;
+  font-weight: 700;
+}
+.form_area dd + dt {
+  margin-top: 1.5em;
+}
+
+.form_area .btn_area {
   margin-top: 1.5em;
   text-align: center;
 }

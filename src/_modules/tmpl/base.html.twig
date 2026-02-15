@@ -9,7 +9,7 @@
 <meta name="pinterest" content="nopin">
 <title>{{ title }}</title>
 <link rel="stylesheet" href="{% if '/admin' in current_path %}../{% else %}./{% endif %}css/style.css">
-<script src="{% if '/admin' in current_path %}../{% else %}./{% endif %}js/script.js" defer></script>
+{% if bodyClass != 'admin' %}<script src="./js/script.js" defer></script>{% endif %}
 </head>
 <body class="{{ bodyClass }}">
 
@@ -27,7 +27,6 @@
   </main>
 
   <footer class="footer">
-    <p><small><a href="{% if '/admin' in current_path %}../{% else %}./{% endif %}">{{ title }}</a></small></p>
     <p><a href="{% if '/admin' in current_path %}./{% else %}./admin/{% endif %}">* admin</a></p>
   </footer>
 
