@@ -25,7 +25,7 @@ body, p, dl, dt, dd, h1, ul, ol, li, form, input, textarea, button {
   --primaryColor: #6fa4af;
   --bgColor: #fefefe;
   --whiteColor: #fefefe;
-  --grayColor: #999;
+  --grayColor: #ababab;
   --grayBgColor: #f5f5f5;
   --attentionColor: #d97d55;
 }
@@ -86,7 +86,7 @@ a:active {
 }
 
 .header {
-  margin-bottom: 3em;
+  margin-bottom: 2em;
 }
 
 .back {
@@ -101,68 +101,33 @@ h1 {
   text-align: center;
 }
 
-.description {
-  text-align: center;
+@media screen and (min-width: 740px) {
+  .description {
+    text-align: center;
+  }  
 }
 
 .main {
   margin-bottom: 3.5em;
 }
 
-.gallery_area {
-  margin-bottom: 1.5em;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 2px;
+/* admin */
+.results {
+  margin-bottom: 2em;
+  text-align: center;
 }
 
-@media screen and (max-width: 739px) {
-  .gallery_area {
-    margin-inline: calc((100vw - 90%) / 2 * -1);
-  }
+.result_data {
+  margin-bottom: 2em;
+  border-block: 1px solid var(--grayColor);
 }
 
-.gallery_area .conte {
-  position: relative;
-  overflow: hidden;
+.result_data li {
+  padding-block: 2em;
+  list-style: none;
 }
-.gallery_area .conte img {
-  transition: scale 0.3s ease;
-}
-
-.gallery_area .conte a {
-  text-decoration: none;
-  display: block;
-}
-.gallery_area .conte a:hover {
-  opacity: 0.75;
-}
-.gallery_area .conte a:hover img {
-  scale: 1.1;
-}
-
-.gallery_area .conte .count {
-  color: var(--grayColor);
-  font-size: 0.85em;
-  line-height: 1;
-  background-color: var(--whiteColor);
-  border: 1px solid var(--grayColor);
-  border-radius: 5px;
-  width: 30px;
-  height: 30px;
-  position: absolute;
-  top: 0.5em;
-  right: 0.5em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
-}
-
-.gallery_area .conte img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
+.result_data li:not(:last-child) {
+  border-bottom: 1px dotted var(--grayColor);
 }
 
 .navigation {
@@ -323,6 +288,18 @@ button:hover {
   background-color: var(--primaryColor);
   border-color: var(--primaryColor);
 }
+.emoji_list label:hover {
+  animation: ripple 1.5s infinite;
+}
+.emoji_list label:has(input[type="radio"]:focus) {
+  animation: ripple 1.5s ease-out;
+}
+
+@keyframes ripple {
+  0% { box-shadow: 0 0 0 0 var(--primaryColor); }
+  70% { box-shadow: 0 0 0 10px rgb(111 164 175 / 0%); }
+  100% { box-shadow: 0 0 0 0 rgb(111 164 175 / 0%); }
+}
 
 .form_area dl {
   margin-top: 1.5em;
@@ -339,5 +316,16 @@ button:hover {
 .form_area .btn_area {
   margin-top: 1.5em;
   text-align: center;
+}
+
+/* admin */
+.admin .form_area form {
+  display: flex;
+  align-items: flex-end;
+}
+
+.admin .form_area dl {
+  margin-right: 0.5em;
+  width: calc(100% - 100px - 0.5em);
 }
 

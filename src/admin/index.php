@@ -23,7 +23,7 @@
 
   //phpdotenv
   use Dotenv\Dotenv;
-  $dotenv = Dotenv::createImmutable(__DIR__);
+  $dotenv = Dotenv::createImmutable(__DIR__. '/..');
   $dotenv->load();
 
   //include
@@ -113,6 +113,7 @@
   //Twigに渡してレンダリング
   echo $template->render([
     'bodyClass' => 'admin',
+    'current_path' => $_SERVER['REQUEST_URI'],
     'title' => $title,
     'token' => $token,
     'logFileExists' => $logFileExists,

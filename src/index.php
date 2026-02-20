@@ -70,11 +70,12 @@
         //バリデーションチェック
         if (empty($post_emoji)) $error[] = '絵文字は1つ選択してください';
         if (!is_string($post_emoji)) $error[] = '不正な絵文字を検出したため送信できませんでした';
+        if (mb_strlen($post_message, 'UTF-8') > $maxCount) $error[] = 'コメントの文字数が' .$maxCount. '文字を超えています';
 
         //エラーがなければ保存処理
         if (empty($error)) {
           $w_data = [];
-          $w_data = loadDatas($log_file);
+          $w_data = loadLogs($log_file);
 
           $w_data[] = [
             'date' => date('Y-m-d H:i:s'),
@@ -100,6 +101,7 @@
   // Twigに渡してレンダリング
   echo $template->render([
     'bodyClass' => 'form_page',
+    'current_path' => $_SERVER['REQUEST_URI'],
     'title' => $title,
     'description' => $description,
     'siteName' => $siteName,

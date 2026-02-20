@@ -7,7 +7,7 @@
 <meta name="format-detection" content="telephone=no">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="pinterest" content="nopin">
-<title>{{ title }}</title>
+<title>{% if '/admin' in current_path %}admin {% endif %}{{ title }}</title>
 <link rel="stylesheet" href="{% if '/admin' in current_path %}../{% else %}./{% endif %}css/style.css">
 {% if bodyClass != 'admin' %}<script src="./js/script.js" defer></script>{% endif %}
 </head>
@@ -16,7 +16,11 @@
 <div class="wrapper">
 
   <header class="header">
-    {% if siteName %}<div class="back"><a href="{{ siteURL }}">{{ siteName }}</a></div>{% endif %}
+    {% if '/admin' in current_path %}
+      <div class="back"><a href="../">back</a></div>
+    {% else %}
+      {% if siteName %}<div class="back"><a href="{{ siteURL }}">{{ siteName }}</a></div>{% endif %}
+    {% endif %}
 
     <h1>{{ title }}</h1>
     {% if description %}<p class="description">{{ description|nl2br }}</p>{% endif %}

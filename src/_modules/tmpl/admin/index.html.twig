@@ -1,19 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block css %}<link rel="stylesheet" href="../css/style.css">{% endblock %}
-
-{% block backlink %}
-  <div class="back"><a href="../">アンケートに戻る</a></div>
-{% endblock %}
-
 {% block main %}
 
   {# logFileExistsチェック #}
   {% if not logFileExists %}
-    <p class="error">データ保存用jsonファイルがありません</p>
+    <p class="msg error">データ保存用jsonファイルがありません</p>
   {% else %}
 
-    {{ include('error.html.twig') }}
+    {% for msg in error %}
+      <p class="msg error">{{ msg }}</p>
+    {% endfor %}
 
     {% if isAdmin %}
 
@@ -26,14 +22,9 @@
         <ul class="result_data">
           {% for item in results %}
             <li>
-              <div class="date"><time datetime="{{ item.date }}">{{ item.date }}</time></div>
               <dl>
-                {% for key, value in item.enqdata %}
-                  {% if value %}
-                    <dt>{{ label[key] is defined ? label[key] : key }}</dt>
-                    <dd>{{ value|nl2br }}</dd>
-                  {% endif %}
-                {% endfor %}
+                <dt><time datetime="{{ item.date }}">{{ item.date }}</time> {{ item.emoji }}</dt>
+                <dd>{{ item.message|nl2br }}</dd>
               </dl>
             </li>
           {% endfor %}
@@ -49,7 +40,7 @@
               <li>...</li>
             {% endif %}
 
-            {% for p in (pager - 2)..(pager + 2) %}
+            {% for p in (pager - 1)..(pager + 1) %}
               {% if p > 0 and p <= totalPages %}
                 <li>
                   {% if p == pager %}
@@ -84,7 +75,7 @@
           </dl>
 
           <div class="btn_area">
-            <button type="submit" name="send">送信</button>
+            <button type="submit" name="send">管理者用</button>
           </div>
         </form>
       </div>
