@@ -178,15 +178,20 @@ h1 {
   font-size: 0.85em;
 }
 
+.msg {
+  font-weight: 700;
+}
+.msg:has(+ form) {
+  margin-bottom: 1.5em;
+}
+
 .error {
   color: var(--attentionColor);
-  font-weight: 700;
 }
 
 .success {
   padding: 1em 0.5em;
   color: var(--whiteColor);
-  font-weight: 700;
   text-align: center;
   background-color: var(--primaryColor);
   width: 100%;
@@ -270,7 +275,7 @@ button:hover {
 }
 
 .emoji_list li {
-  margin: 0 0.5em 0.25em;
+  margin: 0 0.25em 0.5em;
   font-size: 1.25em;
   list-style: none;
 }

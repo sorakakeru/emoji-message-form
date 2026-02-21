@@ -68,9 +68,20 @@
         $post_message = $_POST['message'] ?? '';
 
         //バリデーションチェック
+        if (mb_strlen($post_message, 'UTF-8') > $maxCount) $error[] = 'コメントの文字数が' .$maxCount. '文字を超えています';
+
         if (empty($post_emoji)) $error[] = '絵文字は1つ選択してください';
         if (!is_string($post_emoji)) $error[] = '不正な絵文字を検出したため送信できませんでした';
-        if (mb_strlen($post_message, 'UTF-8') > $maxCount) $error[] = 'コメントの文字数が' .$maxCount. '文字を超えています';
+
+        //絵文字インデックス抽出とチェック
+        if (preg_match('/^emoji([0]|[1-9][0-9]*)$/', $post_emoji, $matches)) {
+          $emoji_index = (int)$matches[1];
+          if (!isset($emoji_list[$emoji_index])) {
+            $error[] = '不正な絵文字を検出したため送信できませんでした';
+          }
+        } else {
+          $error[] = '不正な絵文字を検出したため送信できませんでした';
+        }
 
         //エラーがなければ保存処理
         if (empty($error)) {
@@ -79,7 +90,7 @@
 
           $w_data[] = [
             'date' => date('Y-m-d H:i:s'),
-            'emoji' => $emoji_list[str_replace('emoji', '', $post_emoji)],
+            'emoji' => $emoji_list[(int)$emoji_index],
             'message' => $post_message
           ];
 

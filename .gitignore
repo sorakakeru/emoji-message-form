@@ -2,5 +2,4 @@
 
 src/.env
 src/.htaccess
-src/log.json
 src/_modules/vendor

@@ -10,107 +10,75 @@
 /**
  * 文字数カウント
  */
-
-/*
-
 function countText(elm) {
-  const maxCountElm = elm.closest('dd').querySelector('.count span')
-  const currentLength = elm.value.length
+  const maxCountElm = elm.closest('dd').querySelector('.count span');
+  const currentLength = elm.value.length;
 
   if (maxCountElm) {
-    const maxLength = parseInt(maxCountElm.dataset.maxcount, 10) || parseInt(maxCountElm.textContent, 10)
-    const remain = maxLength - currentLength
-    maxCountElm.textContent = remain
+    const maxLength = parseInt(maxCountElm.dataset.maxcount, 10) || parseInt(maxCountElm.textContent, 10);
+    const remain = maxLength - currentLength;
+    maxCountElm.textContent = remain;
 
     currentLength > maxLength
-      ? maxCountElm.classList.add('error')
-      : maxCountElm.classList.remove('error')
+      ? maxCountElm.classList.add('msg', 'error')
+      : maxCountElm.classList.remove('msg', 'error');
   }
 }
 
 function addCountEvent(selector) {
   document.querySelectorAll(selector).forEach(function(elm) {
-    elm.addEventListener('input', function() { countText(elm) })
+    elm.addEventListener('input', function() { countText(elm) });
   })
 }
+addCountEvent('dd textarea');
 
-// テキストエリア（1行）
-addCountEvent('dd input[type="text"]')
-
-// テキストエリア（複数行）
-addCountEvent('dd textarea')
-*/
 
 /**
  * 入力フォームバリデーションチェック
  */
+//ラジオボタン（絵文字）
+function validateChoice(elm) {
+  const checked = elm.querySelectorAll('input[type="radio"]:checked');
+  let error = '';
 
-/*
-//1行＆複数行テキストエリア
-function validateInput(elm, type) {
-  const dd = elm.closest('dd')
-  const required = dd.previousElementSibling.querySelector('.required')
-  const countElm = dd.querySelector('.count span')
-  const value = elm.value
-  let error = ''
+  if (checked.length === 0) {
+    error = '絵文字をどれか1つ選択してください';
+    elm.insertAdjacentHTML('afterend', `<p class="msg error">${error}</p>`);
+    return false;
+  }
+  return true;
+}
 
-  if (required && value.length === 0) error = '入力必須項目です'
+//メッセージ（複数行テキスト）
+function validateInput(elm) {
+  const dd = elm.closest('dd');
+  const countElm = dd.querySelector('.count span');
+  const value = elm.value;
+  let error = '';
 
   if (countElm) {
-    const maxCount = parseInt(countElm.dataset.maxcount, 10) || parseInt(countElm.textContent, 10)
-    if (maxCount && value.length > maxCount) error = '送信できる文字数を超えています'
+    const maxCount = parseInt(countElm.dataset.maxcount, 10);
+    if (maxCount && value.length > maxCount) {
+      error = '送信できる文字数を超えています';
+    }
   }
 
   if (error) {
-    dd.insertAdjacentHTML('beforeend', `<p class="error">${error}</p>`)
-    return false
+    dd.insertAdjacentHTML('beforeend', `<p class="msg error">${error}</p>`);
+    return false;
   }
-  return true
-}
-
-//チェックボックス＆ラジオボタン
-function validateChoice(elm, type) {
-  const dd = elm.closest('dd')
-  const required = dd.previousElementSibling.querySelector('.required')
-  const checked = elm.querySelectorAll(`input[type="${type}"]:checked`)
-  let error = ''
-
-  if (required && checked.length === 0) {
-    error = type === 'radio' ? '1つ選択してください' : '1つ以上選択してください'
-    dd.insertAdjacentHTML('beforeend', `<p class="error">${error}</p>`)
-    return false
-  }
-  return true
+  return true;
 }
 
 //送信ボタンを押した処理
-const form = document.getElementById('enqForm')
+const form = document.getElementById('msgForm');
 form.addEventListener('submit', (e) => {
 
   //error&success文言削除
-  document.querySelectorAll('.form_area p.error').forEach(function(txt) { txt.remove() })
-  document.querySelector('.success') && document.querySelector('.success').remove()
+  document.querySelectorAll('p.error').forEach(function(txt) { txt.remove() });
+  document.querySelector('p.success') && document.querySelector('p.success').remove();
 
-  //ラジオボタン
-  form.querySelectorAll('dd:has(input[type="radio"])').forEach(elm => {
-    if (!validateChoice(elm, 'radio')) e.preventDefault()
-  })
+  if (!validateChoice(form.querySelector('.emoji_list'))) e.preventDefault();
+  if (!validateInput(form.querySelector('dd textarea'))) e.preventDefault();
 
-  //チェックボックス
-  form.querySelectorAll('dd:has(input[type="checkbox"])').forEach(elm => {
-    if (!validateChoice(elm, 'checkbox')) e.preventDefault()
-  })
-
-  //テキスト（1行）
-  form.querySelectorAll('dd input[type="text"]').forEach(elm => {
-    if (!validateInput(elm, 'text')) e.preventDefault()
-  })
-
-  //テキストエリア（複数行）
-  form.querySelectorAll('dd textarea').forEach(elm => {
-    if (!validateInput(elm, 'textarea')) e.preventDefault()
-  })
-
-})
-*/
-
+});

@@ -84,6 +84,7 @@
           $total = count($data);
           $totalPages = (int)ceil($total / $page);
           $pager = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
+          if ($pager > $totalPages) $pager = $totalPages;
           $startPage = ($pager - 1) * $page;
           $results = array_slice($data, $startPage, $page, true);
         }
@@ -105,6 +106,7 @@
       $total = count($data);
       $totalPages = (int)ceil($total / $page);
       $pager = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
+      if ($pager > $totalPages) $pager = $totalPages;
       $startPage = ($pager - 1) * $page;
       $results = array_slice($data, $startPage, $page, true);
     }

@@ -22,7 +22,9 @@
 
   //セッション
   function sessionStart() {
-    session_start();
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+      session_start();
+    }
     //ログインや重要操作時にID再生成
     if (!isset($_SESSION['initiated'])) {
       session_regenerate_id(true);
@@ -39,15 +41,6 @@
   function validateToken($token, $sessionKey = 'token') {
     //送信されてきた$tokenが生成したハッシュと一致するか
     return isset($_SESSION[$sessionKey]) && hash_equals($_SESSION[$sessionKey], $token);
-  }
-
-  //XSS対策
-  function h($str) {
-    if (is_array($str)) {
-      return array_map('h', $str);
-    } else {
-      return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
-    }
   }
 
 ?>
