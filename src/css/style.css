@@ -325,6 +325,21 @@ button:hover {
 }
 
 /* admin */
+.admin .logout_area {
+  text-align: center;
+}
+
+.admin .logout_area button {
+  color: var(--attentionColor);
+  background-color: unset;
+  border-radius: unset;
+  width: auto;
+}
+
+.admin .logout_area button:hover {
+  background-color: unset;
+}
+
 .admin .form_area form {
   display: flex;
   align-items: flex-end;

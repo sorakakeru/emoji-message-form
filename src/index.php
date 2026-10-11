@@ -14,6 +14,10 @@
    * https://github.com/vlucas/phpdotenv/blob/master/LICENSE
    */
 
+  //include
+  require_once __DIR__. '/_modules/fnc_inc/config.php';
+  require_once __DIR__. '/_modules/fnc_inc/functions.php';
+
   require_once __DIR__. '/_modules/vendor/autoload.php';
 
   //Twig
@@ -21,92 +25,56 @@
   $twig = new \Twig\Environment($loader, []);
   $template = $twig->load('index.html.twig');
 
-  //include
-  require_once __DIR__. '/_modules/fnc_inc/config.php';
-  require_once __DIR__. '/_modules/fnc_inc/functions.php';
-
   sessionStart();
   
 
-  //default
-  $token = '';
   $sendSuccess = false;
   $error = [];
+  $logFileExists = is_file($log_file);
+  $emoji_list = !empty($emoji_list) ? $emoji_list : [];
+  $token = csrfToken('form');
 
-  //ファイルの存在チェック
-  $logFileExists = file_exists($log_file);
-
-  if ($logFileExists) {
-    //token生成
-    if (empty($_SESSION['token'])) {
-      $_SESSION['token'] = generateToken();
-    }
-    $token = $_SESSION['token'];
-
-    //絵文字リストが空欄でなければデータを格納
-    $emoji_list = (!empty($emoji_list)) ? $emoji_list : [];
-  }
-
-
-  //フォーム送信処理
-  if (isset($_POST['send'])) {
-
-    //token確認
-    $token = isset($_POST['token']) ? $_POST['token'] : '';
-    $validateToken = validateToken($token);
-
-    if (!$validateToken) {
-      $error[] = '不正な操作を検出したため送信できませんでした';
-    } else {
-
-      if (!$logFileExists) {
+  if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    if (requestTooLarge()) {
+      http_response_code(413);
+      $error[] = '送信データが大きすぎます';
+    } elseif (isset($_POST['send'])) {
+      if (!validateToken($_POST['token'] ?? null, 'form')) {
+        http_response_code(400);
+        $error[] = '不正な操作を検出したため送信できませんでした';
+      } elseif (!$logFileExists) {
+        http_response_code(503);
         $error[] = 'データ保存用jsonファイルがありません';
       } else {
-
-        //データ取得
-        $post_emoji = $_POST['emoji'] ?? '';
-        $post_message = $_POST['message'] ?? '';
-
-        //バリデーションチェック
-        if (mb_strlen($post_message, 'UTF-8') > $maxCount) $error[] = 'コメントの文字数が' .$maxCount. '文字を超えています';
-
-        if (empty($post_emoji)) $error[] = '絵文字は1つ選択してください';
-        if (!is_string($post_emoji)) $error[] = '不正な絵文字を検出したため送信できませんでした';
-
-        //絵文字インデックス抽出とチェック
-        if (preg_match('/^emoji([0]|[1-9][0-9]*)$/', $post_emoji, $matches)) {
-          $emoji_index = (int)$matches[1];
-          if (!isset($emoji_list[$emoji_index])) {
-            $error[] = '不正な絵文字を検出したため送信できませんでした';
-          }
+        $submission = validateEmojiSubmission($_POST, $emoji_list);
+        $error = $submission['errors'];
+        if ($error) {
+          http_response_code(400);
         } else {
-          $error[] = '不正な絵文字を検出したため送信できませんでした';
+          try {
+            $retry = consumeRateLimit('submission', $submissionLimits);
+            if ($retry > 0) {
+              http_response_code(429);
+              header('Retry-After: ' .$retry);
+              $error[] = '送信回数の上限に達しました。時間をおいて再度お試しください';
+            } else {
+              appendLog($log_file, [
+                'date' => date('Y-m-d H:i:s'),
+                'emoji' => $submission['emoji'],
+                'message' => $submission['message']
+              ]);
+              $sendSuccess = true;
+              $_SESSION['emoji_form']['csrf_form'] = generateToken();
+              $token = csrfToken('form');
+            }
+          } catch (Throwable $exception) {
+            http_response_code(503);
+            error_log('Emoji message form submission failed: ' .get_class($exception));
+            $error[] = '保存できませんでした。時間をおいて再度お試しください';
+          }
         }
-
-        //エラーがなければ保存処理
-        if (empty($error)) {
-          $w_data = [];
-          $w_data = loadLogs($log_file);
-
-          $w_data[] = [
-            'date' => date('Y-m-d H:i:s'),
-            'emoji' => $emoji_list[(int)$emoji_index],
-            'message' => $post_message
-          ];
-
-          //ファイル書き込み
-          $sendSuccess = file_put_contents($log_file, json_encode($w_data, JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
-
-          //token再生成（削除の代わり）
-          $_SESSION['token'] = generateToken();
-          $token = $_SESSION['token'];
-
-        }
-
       }
-
     }
-
   }
 
   // Twigに渡してレンダリング
@@ -115,6 +83,7 @@
     'current_path' => $_SERVER['REQUEST_URI'],
     'title' => $title,
     'description' => $description,
+    'adminURL' => $admin_url,
     'siteName' => $siteName,
     'siteURL' => $siteURL,
     'token' => $token,

@@ -2,19 +2,28 @@
 
 {% block main %}
 
+  {% if isAdmin %}
+    <div class="logout_area">
+      <form action="" method="post">
+        <input type="hidden" name="token" value="{{ token }}">
+        <button type="submit" name="logout">管理画面からログアウトする</button>
+      </form>
+    </div>
+  {% endif %}
+
+  {% for msg in error %}
+    <p class="msg error">{{ msg }}</p>
+  {% endfor %}
+
   {# logFileExistsチェック #}
   {% if not logFileExists %}
     <p class="msg error">データ保存用jsonファイルがありません</p>
   {% else %}
 
-    {% for msg in error %}
-      <p class="msg error">{{ msg }}</p>
-    {% endfor %}
-
     {% if isAdmin %}
 
       {% if not results %}
-        <p class="results">まだデータはありません</p>
+        {% if not error %}<p class="results">まだデータはありません</p>{% endif %}
       {% else %}
 
         <p class="results">データ：全{{ total }}件</p>

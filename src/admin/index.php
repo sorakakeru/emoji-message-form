@@ -14,6 +14,10 @@
    * https://github.com/vlucas/phpdotenv/blob/master/LICENSE
    */
 
+  //include
+  require_once __DIR__. '/../_modules/fnc_inc/config.php';
+  require_once __DIR__. '/../_modules/fnc_inc/functions.php';
+
   require_once __DIR__. '/../_modules/vendor/autoload.php';
 
   //Twig
@@ -23,92 +27,82 @@
 
   //phpdotenv
   use Dotenv\Dotenv;
-  $dotenv = Dotenv::createImmutable(__DIR__. '/..');
+  $dotenv = Dotenv::createImmutable($env_dir);
   $dotenv->load();
-
-  //include
-  require_once __DIR__. '/../_modules/fnc_inc/config.php';
-  require_once __DIR__. '/../_modules/fnc_inc/functions.php';
 
   sessionStart();
   
 
-  //default
-  $token = '';
-  $isAdmin = !empty($_SESSION['isAdmin']);
+  $isAdmin = isEmojiFormAdmin();
   $results = [];
   $total = 0;
   $pager = 1;
   $totalPages = 1;
   $error = [];
+  $logFileExists = is_file($log_file);
+  $token = csrfToken('admin');
 
-  //ファイルの存在チェック
-  $logFileExists = file_exists($log_file);
-
-  if ($logFileExists) {
-    //token生成
-    if (empty($_SESSION['token'])) {
-      $_SESSION['token'] = generateToken();
-    }
-    $token = $_SESSION['token'];
-  }
-
-
-  //フォーム送信処理
-  if (isset($_POST['send'])) {
-
-    //token確認
-    $token = isset($_POST['token']) ? $_POST['token'] : '';
-    $validateToken = validateToken($token);
-
-    if (!$validateToken) {
-      $error[] = '不正な操作を検出したためログインできませんでした';
-    } else {
-
-      //パスワードの整合性チェック（PWはハッシュ化されている必要がある）
-      $pw = $_POST['password'] ?? '';
-      if (!password_verify($pw, $_ENV['ADMIN_PW'])) {
-        $error[] = 'ログインパスワードが一致しませんでした';
+  if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    if (requestTooLarge()) {
+      http_response_code(413);
+      $error[] = '送信データが大きすぎます';
+    } elseif (isset($_POST['logout'])) {
+      if (!validateToken($_POST['token'] ?? null, 'admin')) {
+        http_response_code(400);
+        $error[] = '不正な操作を検出したためログアウトできませんでした';
       } else {
-        session_regenerate_id(true);
-        $isAdmin = true;
-        $_SESSION['isAdmin'] = true;
-        
-        $data = loadLogs($log_file);
-
-        //データ展開
-        if (!empty($data)) {
-          $data = array_reverse($data);
-
-          //ページャー設定
-          $total = count($data);
-          $totalPages = (int)ceil($total / $page);
-          $pager = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
-          if ($pager > $totalPages) $pager = $totalPages;
-          $startPage = ($pager - 1) * $page;
-          $results = array_slice($data, $startPage, $page, true);
-        }
-
+        logoutEmojiFormAdmin();
+        header('Location: ' .$script_dir, true, 303);
+        exit;
       }
-
+    } elseif (isset($_POST['send'])) {
+      if (!validateToken($_POST['token'] ?? null, 'admin')) {
+        http_response_code(400);
+        $error[] = '不正な操作を検出したためログインできませんでした';
+      } else {
+        $pw = $_POST['password'] ?? null;
+        if (!is_string($pw) || strlen($pw) > $maxPasswordBytes) {
+          http_response_code(400);
+          $error[] = 'パスワードの入力形式が不正です';
+        } else {
+          try {
+            $retry = consumeRateLimit('login', $loginLimits);
+            if ($retry > 0) {
+              http_response_code(429);
+              header('Retry-After: ' .$retry);
+              $error[] = 'ログイン試行回数の上限に達しました。時間をおいて再度お試しください';
+            } elseif (!is_string($_ENV['ADMIN_PW'] ?? null) || $_ENV['ADMIN_PW'] === '') {
+              throw new RuntimeException('Administrator password is not configured');
+            } elseif (!password_verify($pw, $_ENV['ADMIN_PW'])) {
+              $error[] = 'ログインパスワードが一致しませんでした';
+            } else {
+              loginEmojiFormAdmin();
+              $isAdmin = true;
+              $token = csrfToken('admin');
+            }
+          } catch (Throwable $exception) {
+            http_response_code(503);
+            error_log('Emoji message form login failed: ' .get_class($exception));
+            $error[] = 'ログインできませんでした。時間をおいて再度お試しください';
+          }
+        }
+      }
     }
-
   }
 
-  //ページャー遷移時もデータ取得・ページング処理を行う
   if ($isAdmin && $logFileExists) {
-    $data = loadLogs($log_file);
-
-    if (!empty($data)) {
-      $data = array_reverse($data);
-
-      //ページャー設定
+    try {
+      $data = array_reverse(loadLogs($log_file));
       $total = count($data);
-      $totalPages = (int)ceil($total / $page);
-      $pager = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
-      if ($pager > $totalPages) $pager = $totalPages;
-      $startPage = ($pager - 1) * $page;
-      $results = array_slice($data, $startPage, $page, true);
+      $totalPages = max(1, (int)ceil($total / $page));
+      $requestedPage = $_GET['page'] ?? '1';
+      $pager = is_string($requestedPage) && ctype_digit($requestedPage)
+        ? max(1, min($totalPages, (int)$requestedPage)) : 1;
+      $results = array_slice($data, ($pager - 1) * $page, $page);
+    } catch (Throwable $exception) {
+      http_response_code(503);
+      error_log('Emoji message form log read failed: ' .get_class($exception));
+      $error[] = '保存データを読み込めませんでした';
     }
   }
 
@@ -117,6 +111,7 @@
     'bodyClass' => 'admin',
     'current_path' => $_SERVER['REQUEST_URI'],
     'title' => $title,
+    'adminURL' => $admin_url,
     'token' => $token,
     'logFileExists' => $logFileExists,
     'isAdmin' => $isAdmin,
