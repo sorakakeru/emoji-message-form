@@ -19,7 +19,7 @@
    */
   function securityRuntimeDirectory() {
     $projectRoot = realpath(dirname(__DIR__, 2));
-    if ($projectRoot === false) throw new RuntimeException('Project directory is unavailable');
+    if ($projectRoot === false) throw new RuntimeException('ディレクトリが使用できません');
     $directory = $projectRoot. '/_runtime';
     if (is_link($directory) || !is_dir($directory)) {
       throw new RuntimeException('`/_runtime`ディレクトリを設置してください');
@@ -163,7 +163,7 @@
    * 関数：レートリミット
    */
   function consumeRateLimit($category, array $limits) {
-    if (!in_array($category, ['login', 'submission'], true)) throw new InvalidArgumentException('Invalid limit category');
+    if (!in_array($category, ['login', 'submission'], true)) throw new InvalidArgumentException('無効な制限カテゴリ');
     $window = $limits['window'];
     $address = $_SERVER['REMOTE_ADDR'] ?? '';
     $address = is_string($address) && filter_var($address, FILTER_VALIDATE_IP) ? $address : 'unknown';
@@ -287,7 +287,7 @@
   function sessionStart() {
     $name = emojiFormSessionName();
     if (session_status() === PHP_SESSION_ACTIVE && session_name() !== $name) {
-      throw new RuntimeException('An unrelated session is already active');
+      throw new RuntimeException('無関係なセッションが有効化されています');
     }
     if (session_status() !== PHP_SESSION_ACTIVE) {
       ini_set('session.use_strict_mode', '1');
@@ -296,7 +296,7 @@
       ini_set('session.use_trans_sid', '0');
       session_name($name);
       session_set_cookie_params(emojiFormSessionCookieOptions());
-      if (!session_start()) throw new RuntimeException('Cannot start session');
+      if (!session_start()) throw new RuntimeException('セッションをスタートできませんでした');
     }
     if (!isset($_SESSION['emoji_form']) || !is_array($_SESSION['emoji_form'])) $_SESSION['emoji_form'] = [];
     if (empty($_SESSION['emoji_form']['initiated'])) {
@@ -368,5 +368,5 @@
     setcookie(session_name(), '', ['expires' => time() - 3600, 'path' => $params['path'],
       'domain' => $params['domain'], 'secure' => $params['secure'],
       'httponly' => $params['httponly'], 'samesite' => $params['samesite']]);
-    if (!session_destroy()) throw new RuntimeException('Cannot destroy session');
+    if (!session_destroy()) throw new RuntimeException('セッションを無効化できませんでした');
   }
