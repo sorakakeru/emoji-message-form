@@ -10,16 +10,26 @@
 ADMIN_PW='[ハッシュ化したパスワード]'
 ```
 
-2. 同じく`/src`ディレクトリ直下に`.htaccess`ファイルを設置し、`.`ファイルへのアクセスを禁止する
+2. 同じく`/src`ディレクトリ直下に`.htaccess`ファイルを設置し、`.`ファイルと`log.json`へのアクセスを禁止する
 
 ```apache
 <Files ~ "^\.">
   Require all denied
 </Files>
+
+<Files "log.json">
+  Require all denied
+</Files>
 ```
 
-3. `/src/_modules/fnc_inc/config.php`で項目を設定する
-4. `/src`ディレクトリをサーバーにアップロードする
+3. 同じく`/src`ディレクトリ直下に`/_runtime`ディレクトリを作成し、その中に`.htaccess`ファイルを置いて以下を記述しアクセス拒否する
+
+```apache
+Require all denied
+```
+
+4. `/src/_modules/fnc_inc/config.php`で項目を設定する
+5. `/src`ディレクトリをサーバーにアップロードする
 
 ## 使用ライブラリ
 

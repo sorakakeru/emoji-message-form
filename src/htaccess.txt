@@ -1,0 +1,7 @@
+<Files ~ "^\.">
+  Require all denied
+</Files>
+
+<Files "log.json">
+	Require all denied
+</Files>

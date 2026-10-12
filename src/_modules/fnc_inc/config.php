@@ -33,12 +33,25 @@
     '☕️'
   ];
 
+  //保存するメッセージの最大件数（上限に達した場合、新規の送信を拒否します）
+  //半角数字で指定してください
+  $maxLogEntries = 10000;
+
   //ページタイトル下の説明文
   //テキストのみでHTMLタグは無効、改行は有効です
   $description = <<<EOT
     絵文字やメッセージを送ることができます（メッセージは任意）
     改行有効です
   EOT;
+
+  //スクリプト設置ディレクトリ
+  //例：設置URLが`https://example.com/form/`の場合、`/form/`と指定
+  $script_dir = '/form/';
+
+  //管理画面ディレクトリ
+  //例：管理画面設置URLが`https://example.com/form/admin/`の場合、`/form/admin/`と指定
+  //管理画面のディレクトリを変更する場合は、実際の`/admin`ディレクトリも変更してください
+  $admin_url = '/form/admin/';
 
   //サイト名（サイトに戻るリンクで使用）
   //空欄の場合はサイトに戻るリンクは表示されません
@@ -59,7 +72,34 @@
   //半角数字で指定してください
   $page = 20;
 
+  //`.env`ファイルのディレクトリパス
+  //場所の変更がなければ、このままでOKです
+  $env_dir = __DIR__. '/..';
+
   //ログファイル（ファイル名や場所の変更がなければ、このままでOKです）
   $log_file = __DIR__. '/../../log.json';
+
+
+  /**
+   * 以下はPHPに詳しい場合のみ変更してください
+   * 通常はこのままでOKです
+   */
+  //保存上限に達した場合は既存ログを削除せず新規投稿を拒否
+  $maxLogBytes = 5 * 1024 * 1024;
+
+  //nullでは接続元とホスト名がループバックのローカルHTTP接続だけSecureを外す
+  //本番はHTTPSで運用し、必要に応じてtrueに固定
+  $sessionSecure = null;
+  //nullでは公開フォームと管理画面に共通するURLパスを自動設定
+  $sessionCookiePath = null;
+  $adminIdleTimeout = 30 * 60;
+  $adminAbsoluteTimeout = 8 * 60 * 60;
+
+  //サーバー側で回数を共有
+  //接続元はREMOTE_ADDRで判定（プロキシ由来のヘッダーは信用しない）
+  $submissionLimits = ['window' => 60, 'per_ip' => 5, 'global' => 60];
+  $loginLimits = ['window' => 15 * 60, 'per_ip' => 5, 'global' => 30];
+  $maxPasswordBytes = 1024;
+  $maxRequestBytes = 16 * 1024;
 
 ?>
