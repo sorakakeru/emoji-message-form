@@ -81,22 +81,22 @@
 
 
   /**
-   * 以下はプログラムに詳しい場合のみ変更してください
+   * 以下はPHPに詳しい場合のみ変更してください
    * 通常はこのままでOKです
    */
-  // 保存上限に達した場合は既存ログを削除せず新規投稿を拒否します
+  //保存上限に達した場合は既存ログを削除せず新規投稿を拒否
   $maxLogBytes = 5 * 1024 * 1024;
 
-  // nullでは接続元とホスト名がループバックのローカルHTTP接続だけSecureを外します
-  // 本番はHTTPSで運用し、必要に応じてtrueに固定してください
+  //nullでは接続元とホスト名がループバックのローカルHTTP接続だけSecureを外す
+  //本番はHTTPSで運用し、必要に応じてtrueに固定
   $sessionSecure = null;
-  // nullでは公開フォームと管理画面に共通するURLパスを自動設定します
+  //nullでは公開フォームと管理画面に共通するURLパスを自動設定
   $sessionCookiePath = null;
   $adminIdleTimeout = 30 * 60;
   $adminAbsoluteTimeout = 8 * 60 * 60;
 
-  // サーバー側で回数を共有し、Cookieの削除や再発行でもリセットしません
-  // 接続元はREMOTE_ADDRで判定し、プロキシ由来のヘッダーは信用しません
+  //サーバー側で回数を共有
+  //接続元はREMOTE_ADDRで判定（プロキシ由来のヘッダーは信用しない）
   $submissionLimits = ['window' => 60, 'per_ip' => 5, 'global' => 60];
   $loginLimits = ['window' => 15 * 60, 'per_ip' => 5, 'global' => 30];
   $maxPasswordBytes = 1024;
