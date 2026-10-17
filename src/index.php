@@ -84,6 +84,7 @@
     'title' => $title,
     'description' => $description,
     'adminURL' => $admin_url,
+    'adminView' => $admin_view,
     'siteName' => $siteName,
     'siteURL' => $siteURL,
     'token' => $token,
