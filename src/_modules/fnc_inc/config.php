@@ -46,12 +46,17 @@
 
   //スクリプト設置ディレクトリ
   //例：設置URLが`https://example.com/form/`の場合、`/form/`と指定
-  $script_dir = '/form/';
+  $script_dir = '/src/';
 
   //管理画面ディレクトリ
   //例：管理画面設置URLが`https://example.com/form/admin/`の場合、`/form/admin/`と指定
   //管理画面のディレクトリを変更する場合は、実際の`/admin`ディレクトリも変更してください
-  $admin_url = '/form/admin/';
+  $admin_url = '/src/admin/';
+
+  //フォーム画面に管理画面へのリンクを表示する
+  //表示する場合は`true`、表示しない場合は`false`を指定してください
+  //管理画面のディレクトリ名を変更した場合は、`false`とすることを推奨します
+  $admin_view = true;
 
   //サイト名（サイトに戻るリンクで使用）
   //空欄の場合はサイトに戻るリンクは表示されません
@@ -74,7 +79,7 @@
 
   //`.env`ファイルのディレクトリパス
   //場所の変更がなければ、このままでOKです
-  $env_dir = __DIR__. '/..';
+  $env_dir = __DIR__. '/../..';
 
   //ログファイル（ファイル名や場所の変更がなければ、このままでOKです）
   $log_file = __DIR__. '/../../log.json';
@@ -90,6 +95,7 @@
   //nullでは接続元とホスト名がループバックのローカルHTTP接続だけSecureを外す
   //本番はHTTPSで運用し、必要に応じてtrueに固定
   $sessionSecure = null;
+
   //nullでは公開フォームと管理画面に共通するURLパスを自動設定
   $sessionCookiePath = null;
   $adminIdleTimeout = 30 * 60;
